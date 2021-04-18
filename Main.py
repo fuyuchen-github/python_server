@@ -1,6 +1,7 @@
 import communication
 import os
 import pickle
+import json
 
 
 def look_for_file(file_name):
@@ -46,12 +47,12 @@ def run_file(file_name, ip_addr, get, post):
 
 
 def run_and_send(file_name, ip, get, post):
-    # get the pickle string
+    # get the json string
     return_of_ins = run_file(os.path.splitext(file_name)[0] + ".py", ip, get, post)
-    # load the pickle string
-    return_of_ins = pickle.loads(return_of_ins)
+    # load the json string
+    return_of_ins = json.loads(return_of_ins)
     # read the file
-    with open(file_name, "r") as f:
+    with open(file_name, "r", encoding="utf-8") as f:
         s = f.read()
     # change the final file
     for i in return_of_ins:
