@@ -1,10 +1,10 @@
 import temp
-import pickle
+import json
 
-with open("argu.pickle", "rb") as f:
+with open("argu.json", "r") as f:
     json_str = f.read()
 
-json_str = pickle.loads(json_str)
+json_str = json.loads(json_str)
 
 with open("out.txt", "w") as f:
-    f.write(temp.Application(json_str[0], pickle.loads(json_str[1]), pickle.loads(json_str[2])))
+    f.write(temp.Application(json_str[0], json.loads(json_str[1]), json.loads(json_str[2])))

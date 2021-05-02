@@ -1,11 +1,13 @@
-import pickle
+import json
 
 
 def Application(ip, get, post):
     if post.get("username") == "" or post.get("password") == "" or post.get("username") == None or post.get("password") == None:
-        return '{"message":"It cannot be empty."}'
-    with open("f\\users", "rb") as f:
-        s = pickle.loads(f.read())
+        return '{"message":"Password and username cannot be empty."}'
+    with open("f\\users.json", "rb") as f:
+        s = json.loads(f.read())
+    if s.get(post["username"]) == None:
+        return '{"message":"User dose not exist."}'
     if s[post["username"]]["password"] == post["password"]:
         ok = True
     else:

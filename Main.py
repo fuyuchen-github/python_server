@@ -1,6 +1,5 @@
 import communication
 import os
-import pickle
 import json
 
 
@@ -35,9 +34,9 @@ def run_file(file_name, ip_addr, get, post):
     with open("temp.py", "w") as f:
         f.write(file_to_run)
 
-    # write the arguments to argu.pickle
-    with open("argu.pickle", "wb") as f:
-        f.write(pickle.dumps([ip_addr, get, post]))
+    # write the arguments to argu.json
+    with open("argu.json", "w") as f:
+        f.write(json.dumps([ip_addr, get, post]))
     os.system("python run_the_file.py")
 
     # read the out.txt
@@ -101,9 +100,9 @@ def response(request: str, addr):
             s = f.read()
         return 200, s
     if found == 1:
-        return 200, run_and_send(file_code[1], addr[0], pickle.dumps(get), pickle.dumps(post)).encode("utf-8")
+        return 200, run_and_send(file_code[1], addr[0], json.dumps(get), json.dumps(post)).encode("utf-8")
     if found == 3:
-        return 200, run_file(file_code[1], addr[0], pickle.dumps(get), pickle.dumps(post)).encode("utf-8")
+        return 200, run_file(file_code[1], addr[0], json.dumps(get), json.dumps(post)).encode("utf-8")
     if found == 404:
         with open("html\\404.html", "rb") as f:
             s = f.read()
@@ -117,7 +116,8 @@ def write_response(file_given):
 
 def oper_main(a, b):
     serv = write_response(response(a, b))
-    print(serv)
+    for i in serv:
+        print(i.decode("utf-8"))
     print("*" * 100)
     return serv
 

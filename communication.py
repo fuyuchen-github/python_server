@@ -1,5 +1,6 @@
 import socket
 import re
+import urllib.parse
 
 def erro(a,b):
     raise EOFError("you must appoint a function to answer the requests.")
@@ -22,10 +23,11 @@ class Server(object):
         request = ""
         # while rec:
         #     try:
-        rec = self.new_socket.recv(1024)
+        rec = self.new_socket.recv(65536)
             # except:
             #     break
         request += rec.decode("utf-8")
+        request = urllib.parse.unquote(request)
         res = self.fun_to_ans(request, self.client_addr)
         for i in tuple(res):
             self.new_socket.send(i)
