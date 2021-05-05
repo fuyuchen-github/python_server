@@ -3,35 +3,63 @@ import os
 import json
 
 
+with open("settings.json", "r") as f:
+    settings = f.read()
+settings = json.loads(settings)
+
 def look_for_file(file_name):
     """
     return:
-        0   have original file but no file to run
-        1   have original file and the file to run
-        3   have file to run
+        0   there is original file but no file to run
+        1   there is original file and the file to run
+        3   this is file to run
         404 no file
     """
+    print(file_name)
+
+    if settings["hot sites"].get(file_name[4:]) != None:
+        return look_for_file("html" + settings["hot sites"][file_name[4:]])
+
     main_file_name = os.path.splitext(file_name)[0]  # get the main name
+    if main_file_name[0] == "'":
+        return 0
     # have the original html file
     if os.path.exists(main_file_name + ".html"):
         # have original file and the file to run
-        if os.path.exists(main_file_name + ".py"):
-            return 1, main_file_name + ".html", main_file_name + ".py"
+        if os.path.exists(main_file_name + "-html.py"):
+            return 1, main_file_name + ".html", main_file_name + "-html.py"
         # have original file but no file to run
         return 0, main_file_name + ".html", None
+# repeat{
+    if os.path.exists(main_file_name + ".css"):
+        # have original file and the file to run
+        if os.path.exists(main_file_name + "-css.py"):
+            return 1, main_file_name + ".css", main_file_name + "-css.py"
+        # have original file but no file to run
+        return 0, main_file_name + ".css", None
+    if os.path.exists(main_file_name + ".js"):
+        # have original file and the file to run
+        if os.path.exists(main_file_name + "-js.py"):
+            return 1, main_file_name + ".js", main_file_name + "-js.py"
+        # have original file but no file to run
+        return 0, main_file_name + ".js", None
+# }
     # have file to run
     if os.path.exists(main_file_name + ".py"):
         return 3, main_file_name + ".py", None
-    # cant find the file
+    # can open the file whithout any operations
+    if os.path.exists(file_name):
+        return 0, file_name, None
+    # can't find the file
     else:
         return 404, None, None
 
 
 def run_file(file_name, ip_addr, get, post):
     # write the file to a place where can reach it
-    with open(file_name, "r") as f:
+    with open(file_name, "r", encoding="utf-8") as f:
         file_to_run = f.read()
-    with open("temp.py", "w") as f:
+    with open("temp.py", "w", encoding="utf-8") as f:
         f.write(file_to_run)
 
     # write the arguments to argu.json
@@ -42,16 +70,23 @@ def run_file(file_name, ip_addr, get, post):
     # read the out.txt
     with open("out.txt", "r") as f:
         s = f.read()
+
+    if s.split(" ")[0] == "spec":
+        return s.split(" ")[1:]
+
     return s
 
 
-def run_and_send(file_name, ip, get, post):
+def run_and_send(html_file_name, py_file_name, ip, get, post):
     # get the json string
-    return_of_ins = run_file(os.path.splitext(file_name)[0] + ".py", ip, get, post)
+    return_of_ins = run_file(py_file_name, ip, get, post)
+    if isinstance(type(return_of_ins), list):
+        if return_of_ins[0] == "jump":
+            pass
     # load the json string
     return_of_ins = json.loads(return_of_ins)
     # read the file
-    with open(file_name, "r", encoding="utf-8") as f:
+    with open(html_file_name, "r", encoding="utf-8") as f:
         s = f.read()
     # change the final file
     for i in return_of_ins:
@@ -100,17 +135,17 @@ def response(request: str, addr):
             s = f.read()
         return 200, s
     if found == 1:
-        return 200, run_and_send(file_code[1], addr[0], json.dumps(get), json.dumps(post)).encode("utf-8")
+        return 200, run_and_send(file_code[1], file_code[2], addr[0], json.dumps(get), json.dumps(post)).encode("utf-8")
     if found == 3:
         return 200, run_file(file_code[1], addr[0], json.dumps(get), json.dumps(post)).encode("utf-8")
-    if found == 404:
-        with open("html\\404.html", "rb") as f:
+    else:
+        with open("html\\%s.html" % found, "rb") as f:
             s = f.read()
-        return 404, s
+        return found, s
 
 
 def write_response(file_given):
-    dictionary = {200: "200 OK", 404: "404 Not Found"}
+    dictionary = {200: "200 OK", 404: "404 Not Found", 403: "403 Forbidden"}
     return ("HTTP/1.1 " + dictionary[file_given[0]] + "\r\n\r\n").encode("utf-8"), file_given[1]
 
 

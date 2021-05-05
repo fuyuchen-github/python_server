@@ -13,5 +13,5 @@ def Application(ip, get, post):
     else:
         ok = False
     if ok:
-        return '{"message":"correct"}'
+        return 'spec jump login.html'
     return '{"message":"The password is incorrect."}'
